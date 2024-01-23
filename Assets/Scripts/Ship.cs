@@ -8,25 +8,23 @@ public class Ship : MonoBehaviour {
     [SerializeField] float rotationSpeed;
     [SerializeField] float acceleration;
     [SerializeField] float deacceleration;
+    [SerializeField] float shootCooldown;
+    [SerializeField] GameObject bullet;
+    [SerializeField] Transform bulletTransform;
+    [SerializeField] Transform bulletBuffer;
 
     Vector3 velocity;
-    Vector2 screenDimensions;
-    Vector2 spriteDimensions;
     SpriteRenderer spriteRenderer;
     PlayerInput input;
-    float pixelsPerUnit;
+    bool canShoot = true;
 
     void Start() {
         EnableInput();
-        SetDimensions();
     }
 
     void Update() {
         Move();
-    }
-
-    void LateUpdate() {
-        Warp();
+        Shoot();
     }
 
     void EnableInput() {
@@ -34,19 +32,20 @@ public class Ship : MonoBehaviour {
         input.Enable();
     }
 
-    void SetDimensions() {
-        Camera mainCamera = Camera.main;
-        Vector2 screenSize = new(Screen.width, Screen.height);
+    void EnableShooting() {
+        canShoot = true;
+    }
 
-        screenDimensions = mainCamera.ScreenToWorldPoint(screenSize);
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        pixelsPerUnit = spriteRenderer.sprite.pixelsPerUnit;
-
-        Vector2 scale = transform.localScale;
-        float spriteWidth = spriteRenderer.sprite.texture.width * scale.x;
-        float spriteHeight = spriteRenderer.sprite.texture.height * scale.y;
-
-        spriteDimensions = new(spriteWidth, spriteHeight);
+    void Shoot() {
+        bool shooting = input.Attack.Shoot.ReadValue<float>() > 0;
+        if (shooting && canShoot) {
+            GameObject bulletGO = Instantiate(bullet, bulletTransform);
+            Bullet bulletComponent = bulletGO.GetComponent<Bullet>();
+            bulletGO.transform.parent = bulletBuffer;
+            bulletComponent.direction = transform.up;
+            canShoot = false;
+            Invoke("EnableShooting", shootCooldown);
+        }
     }
 
     void Move() {
@@ -63,25 +62,5 @@ public class Ship : MonoBehaviour {
         transform.position += velocity * deltaTime;
 
         transform.eulerAngles += new Vector3(0, 0, rotationAngle);
-    }
-
-    void Warp() {
-        Vector2 finalSprite = Camera.main.ScreenToWorldPoint(spriteDimensions);
-        float halfWidth = -finalSprite.x / pixelsPerUnit * 2;
-        float halfHeigth = -finalSprite.y / pixelsPerUnit * 2;
-
-        if (transform.position.x - halfWidth >= screenDimensions.x
-            || transform.position.x + halfWidth <= -screenDimensions.x) {
-
-            transform.position = new(-transform.position.x,
-                transform.position.y, transform.position.z);
-        }
-
-        if (transform.position.y - halfHeigth >= screenDimensions.y
-            || transform.position.y + halfHeigth <= -screenDimensions.y) {
-
-            transform.position = new(transform.position.x,
-                -transform.position.y, transform.position.z);
-        }
     }
 }
