@@ -2,11 +2,21 @@ using UnityEngine;
 
 public class Warp : MonoBehaviour {
     SpriteRenderer spriteRenderer;
+    Vector3 lastFrameTransform;
     Vector2 screenDimensions;
     Vector2 spriteDimensions;
     float pixelsPerUnit;
 
     void Start() {
+        SetDimensions();
+    }
+
+    void Update() {
+        if (lastFrameTransform != transform.position)
+            HandleWarp();
+    }
+
+    void SetDimensions() {
         Camera mainCamera = Camera.main;
         Vector2 screenSize = new(Screen.width, Screen.height);
 
@@ -19,10 +29,6 @@ public class Warp : MonoBehaviour {
         float spriteHeight = spriteRenderer.sprite.texture.height * scale.y;
 
         spriteDimensions = new(spriteWidth, spriteHeight);
-    }
-
-    void Update() {
-        HandleWarp();
     }
 
     void HandleWarp() {

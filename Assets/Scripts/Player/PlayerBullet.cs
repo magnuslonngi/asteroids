@@ -1,7 +1,6 @@
 using UnityEngine;
 
-public class Bullet : MonoBehaviour
-{
+public class PlayerBullet : MonoBehaviour {
     public Vector3 direction;
     [SerializeField] float speed;
     [SerializeField] float range;
