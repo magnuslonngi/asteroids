@@ -2,6 +2,7 @@ using UnityEngine;
 using Unity.Mathematics;
 using UnityEngine.InputSystem;
 
+[RequireComponent(typeof(PlayerInput))]
 [RequireComponent(typeof(SpriteRenderer))]
 public class PlayerMovement : MonoBehaviour {
     [SerializeField] float _thrustSpeed;
@@ -10,7 +11,7 @@ public class PlayerMovement : MonoBehaviour {
     [SerializeField] float _acceleration;
     [SerializeField] float _deacceleration;
 
-    PlayerInput _input;
+    PlayerInput _playerInput;
 
     Vector2 _moveInput;
     Vector3 _velocity;
@@ -18,24 +19,16 @@ public class PlayerMovement : MonoBehaviour {
     float _rotationAngle;
 
     void OnEnable() {
-        _input = PlayerInput.Instance;
-        _input.actions.Movement.Move.started += OnPlayerMove;
-        _input.actions.Movement.Move.performed += OnPlayerMove;
-        _input.actions.Movement.Move.canceled += OnPlayerMove;
+        _playerInput = GetComponent<PlayerInput>();
+        _playerInput.OnPlayerMove += OnPlayerMove;
     }
 
     void Update() {
         Move();
     }
 
-    void OnDisable() {
-        _input.actions.Movement.Move.started -= OnPlayerMove;
-        _input.actions.Movement.Move.performed -= OnPlayerMove;
-        _input.actions.Movement.Move.canceled -= OnPlayerMove;
-    }
-
-    void OnPlayerMove(InputAction.CallbackContext context) {
-        _moveInput = context.ReadValue<Vector2>();
+    void OnPlayerMove(Vector2 input) {
+        _moveInput = input;
         _thrustForce = _moveInput.y * _thrustSpeed * transform.up;
         _rotationAngle = _moveInput.x * _rotationSpeed * -1f;
     }

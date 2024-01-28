@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+[RequireComponent(typeof(PlayerInput))]
 [RequireComponent(typeof(PlayerMovement))]
 public class PlayerShooting : MonoBehaviour {
     [SerializeField] float _shootCooldown;
@@ -8,29 +9,21 @@ public class PlayerShooting : MonoBehaviour {
     [SerializeField] Transform _bulletTransform;
     [SerializeField] Transform _bulletBuffer;
 
-    PlayerInput _input;
+    PlayerInput _playerInput;
     bool _shooting;
     bool _canShoot = true;
 
     void OnEnable() {
-        _input = PlayerInput.Instance;
-        _input.actions.Attack.Shoot.started += OnPlayerShoot;
-        _input.actions.Attack.Shoot.performed += OnPlayerShoot;
-        _input.actions.Attack.Shoot.canceled += OnPlayerShoot;
+        _playerInput = GetComponent<PlayerInput>();
+        _playerInput.OnPlayerShoot += OnPlayerShoot;
     }
 
     void Update() {
         Shoot();
     }
 
-    void OnDisable() {
-        _input.actions.Attack.Shoot.started -= OnPlayerShoot;
-        _input.actions.Attack.Shoot.performed -= OnPlayerShoot;
-        _input.actions.Attack.Shoot.canceled -= OnPlayerShoot;
-    }
-
-    void OnPlayerShoot(InputAction.CallbackContext context) {
-        _shooting = context.ReadValueAsButton();
+    void OnPlayerShoot(bool input) {
+        _shooting = input;
     }
 
     void Shoot() {
